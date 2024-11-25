@@ -3,9 +3,26 @@ from ultralytics import YOLO
 import os
 import csv
 
-class Model:
+class Observable:
     def __init__(self):
-        pass
+        self.observers = []
+
+    def add_observer(self, observer):
+        if observer not in self.observers:
+            self.observers.append(observer)
+
+    def remove_observer(self, observer):
+        if observer in self.observers:
+            self.observers.remove(observer)
+
+    def notify_observers(self):
+        for observer in self.observers:
+            observer.update(self)
+
+class Model(Observable):
+    def __init__(self):
+        super().__init__()
+        self.progressCount = 0
 
     def getTaskOfYOLOv8Model(self, YOLOv8modelToCheck):
         model = YOLO(YOLOv8modelToCheck)
@@ -47,9 +64,14 @@ class Model:
                 invalidYOLOv8ModelPathsList.append(YOLOv8ModelPath)
         return invalidYOLOv8ModelPathsList
 
+    def increaseProgressCount(self):
+        self.progressCount += 1
+        self.notify_observers()
+
     def executePrediction(self, YOLOv8ModelPathsList, imagesPath, outputPath):
         for YOLOv8ModelPath in YOLOv8ModelPathsList:
             task = self.getTaskOfYOLOv8Model(YOLOv8ModelPath)
+            self.progressCount = 0
 
             if task == "classify":
                 YOLOv8Model = YOLO(YOLOv8ModelPath) # Load the model you want to predict with
@@ -68,6 +90,7 @@ class Model:
                             predicted_class = results[0].names[results[0].probs.top1] # Get the name of the class with the highest confidence
                             prediction_confidence = results[0].probs.top1conf.cpu().item() # Get the confidence of the predicted class
                             output_writer.writerow([file, predicted_class, prediction_confidence]) # Write the prediction results
+                            self.increaseProgressCount()
                 del YOLOv8Model
 
             elif task == "segment":
@@ -86,8 +109,8 @@ class Model:
                             results = YOLOv8Model(os.path.join(imagesPath, file)) # Perform prediction on the image
                             if results[0].masks != None:
                                 amount_of_instances = len(results[0].masks.xyn) # Get the amount of detected masks
-                            else: amount_of_instances = 0
+                            else: 
+                                amount_of_instances = 0
                             output_writer.writerow([file, amount_of_instances]) # Write the prediction results
+                            self.increaseProgressCount()
                 del YOLOv8Model
-            
-

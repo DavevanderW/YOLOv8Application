@@ -9,6 +9,7 @@ class Controller():
 
         # create a view and start the view
         self.view = View(self)
+        self.model.add_observer(self.view)
         self.view.main()
 
     def _pathsExist(self, YOLOv8ModelPathsList, imagesPath, outputPath):
@@ -36,9 +37,9 @@ class Controller():
                 # All paths exist and the images folder contains images, check if all YOLOv8 models are valid
                 invalid_models = self.model.validateYOLOv8Models(YOLOv8ModelPathsList)
                 
-                if not invalid_models: # All models are valid, execute prediction
-                    self.model.executePrediction(YOLOv8ModelPathsList, imagesPath, outputPath)
-                else: # There are invalid YOLOv8 models, show an error to the user
+                if invalid_models: # There are invalid YOLOv8 models, show an error to the user
                     delimiter_invalid_models = "\n"
                     invalid_models_string = delimiter_invalid_models.join(invalid_models)
                     self.view.showErrorMessageBox("The following YOLOv8 models are not valid YOLOv8 image classification or instance segmentation models: \n\n" + invalid_models_string)
+                else: # All models are valid, execute prediction
+                    self.model.executePrediction(YOLOv8ModelPathsList, imagesPath, outputPath)

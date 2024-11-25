@@ -1,7 +1,13 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
-class View(tk.Tk):
+from model import Model
+
+class Observer:
+    def update(self, observable, *args, **kwargs):
+        pass
+
+class View(Observer, tk.Tk):
 
     PAD_WIDGET = 5
     PAD_FRAME = 20
@@ -137,6 +143,11 @@ class View(tk.Tk):
     #---------------------------
     # Other methods
     #---------------------------
+    def update(self, observable):
+        if isinstance(observable, Model):
+            progress_count = observable.progressCount
+            print(progress_count)
+
     def _executePrediction(self):
         modelPathsList = []
         for stringVar in self.stringVars:
