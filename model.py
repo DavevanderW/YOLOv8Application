@@ -36,10 +36,11 @@ class Model(Observable):
     
     def checkImagesFolder(self, imagesFolderPathToCheck):
         files = os.listdir(imagesFolderPathToCheck)
+        imagesList = []
         for file in files:
             if file.endswith((".png", ".jpg", ".jpeg")):
-                return True
-        return False
+                imagesList.append(file)
+        return imagesList
 
     def _determineOutputFileName(self, outputPath):
         # default output file is "results.csv", but if a file with that name already exist try "results(1).csv", then "results(2).csv" and so on.
@@ -68,49 +69,44 @@ class Model(Observable):
         self.progressCount += 1
         self.notify_observers()
 
-    def executePrediction(self, YOLOv8ModelPathsList, imagesPath, outputPath):
-        for YOLOv8ModelPath in YOLOv8ModelPathsList:
-            task = self.getTaskOfYOLOv8Model(YOLOv8ModelPath)
-            self.progressCount = 0
+    def executePrediction(self, YOLOv8ModelPath, imagesPath, imagesList, outputPath):
+        task = self.getTaskOfYOLOv8Model(YOLOv8ModelPath)
+        self.progressCount = 0
 
-            if task == "classify":
-                YOLOv8Model = YOLO(YOLOv8ModelPath) # Load the model you want to predict with
+        if task == "classify":
+            YOLOv8Model = YOLO(YOLOv8ModelPath) # Load the model you want to predict with
 
-                outputFilePath = self._determineOutputFileName(outputPath) # determine the output file name
+            outputFilePath = self._determineOutputFileName(outputPath) # determine the output file name
 
-                with open(outputFilePath, "w", newline='') as output: # create the csv file
-                    output_writer = csv.writer(output) # create the csv writer
-                    output_writer.writerow(["image_name", "predicted_class", "confidence"]) # write the first row
+            with open(outputFilePath, "w", newline='') as output: # create the csv file
+                output_writer = csv.writer(output) # create the csv writer
+                output_writer.writerow(["image_name", "predicted_class", "confidence"]) # write the first row
 
-                    # Loop through all images (.png, .jpg, .jpeg) in the folder and perform prediction on them, save each prediction in the csv file
-                    files = os.listdir(imagesPath)
-                    for file in files:
-                        if file.endswith((".png", ".jpg", ".jpeg")):
-                            results = YOLOv8Model(os.path.join(imagesPath, file)) # Perform prediction on the image
-                            predicted_class = results[0].names[results[0].probs.top1] # Get the name of the class with the highest confidence
-                            prediction_confidence = results[0].probs.top1conf.cpu().item() # Get the confidence of the predicted class
-                            output_writer.writerow([file, predicted_class, prediction_confidence]) # Write the prediction results
-                            self.increaseProgressCount()
-                del YOLOv8Model
+                # Loop through all images (.png, .jpg, .jpeg) and perform prediction on them, save each prediction in the csv file
+                for image in imagesList:
+                    results = YOLOv8Model(os.path.join(imagesPath, image)) # Perform prediction on the image
+                    predicted_class = results[0].names[results[0].probs.top1] # Get the name of the class with the highest confidence
+                    prediction_confidence = results[0].probs.top1conf.cpu().item() # Get the confidence of the predicted class
+                    output_writer.writerow([image, predicted_class, prediction_confidence]) # Write the prediction results
+                    self.increaseProgressCount()
+            del YOLOv8Model
 
-            elif task == "segment":
-                YOLOv8Model = YOLO(YOLOv8ModelPath) # Load the model you want to predict with
+        elif task == "segment":
+            YOLOv8Model = YOLO(YOLOv8ModelPath) # Load the model you want to predict with
 
-                outputFilePath = self._determineOutputFileName(outputPath) # determine the output file name
+            outputFilePath = self._determineOutputFileName(outputPath) # determine the output file name
 
-                with open(outputFilePath, "w", newline='') as output: # create the csv file
-                    output_writer = csv.writer(output) # create the csv writer
-                    output_writer.writerow(["image_name", "amount_of_instances"]) # write the first row
+            with open(outputFilePath, "w", newline='') as output: # create the csv file
+                output_writer = csv.writer(output) # create the csv writer
+                output_writer.writerow(["image_name", "amount_of_instances"]) # write the first row
 
-                    # Loop through all images (.png and .jpg) in the folder and perform prediction on them, save each prediction in the csv file
-                    files = os.listdir(imagesPath)
-                    for file in files:
-                        if file.endswith((".png", ".jpg", ".jpeg")):
-                            results = YOLOv8Model(os.path.join(imagesPath, file)) # Perform prediction on the image
-                            if results[0].masks != None:
-                                amount_of_instances = len(results[0].masks.xyn) # Get the amount of detected masks
-                            else: 
-                                amount_of_instances = 0
-                            output_writer.writerow([file, amount_of_instances]) # Write the prediction results
-                            self.increaseProgressCount()
-                del YOLOv8Model
+                # Loop through all images (.png, .jpg, .jpeg) and perform prediction on them, save each prediction in the csv file
+                for image in imagesList:
+                    results = YOLOv8Model(os.path.join(imagesPath, image)) # Perform prediction on the image
+                    if results[0].masks != None:
+                        amount_of_instances = len(results[0].masks.xyn) # Get the amount of detected masks
+                    else: 
+                        amount_of_instances = 0
+                    output_writer.writerow([image, amount_of_instances]) # Write the prediction results
+                    self.increaseProgressCount()
+            del YOLOv8Model

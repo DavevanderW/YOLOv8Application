@@ -40,6 +40,7 @@ class View(Observer, tk.Tk):
         self.modelFilePath4 = tk.StringVar()
         self.modelFilePath5 = tk.StringVar()
         self.stringVars = [self.modelFilePath1, self.modelFilePath2, self.modelFilePath3, self.modelFilePath4, self.modelFilePath5]
+        self.progress = tk.IntVar()
         
         # Step 1: Select one or more model files
         self._createSelectModelFilesLabelFrame()
@@ -56,6 +57,10 @@ class View(Observer, tk.Tk):
         # Predict button
         self._createPredictButton()
 
+        # Prediction progress
+        self._createPredictionProgressLabelFrame()
+        self._createPredictionProgressWidgets()
+
     def _createSelectModelFilesLabelFrame(self):
         self.frm_step1 = ttk.LabelFrame(self.frm_main, text='Step 1')
         self.frm_step1.pack(fill="both", expand=1, pady=self.PAD_FRAME)
@@ -70,6 +75,11 @@ class View(Observer, tk.Tk):
         self.frm_step3 = ttk.LabelFrame(self.frm_main, text='Step 3')
         self.frm_step3.pack(fill="both", expand=1, pady=self.PAD_FRAME)
         self.frm_step3.columnconfigure(1, weight=2)
+
+    def _createPredictionProgressLabelFrame(self):
+        self.frm_progress = ttk.LabelFrame(self.frm_main, text='Prediction Progress')
+        self.frm_progress.pack(fill="both", expand=1, pady=self.PAD_FRAME)
+        self.frm_progress.columnconfigure(1, weight=2)
 
     def _createSelectModelFilesWidgets(self):
         # widgets for selecting one or more YOLOv8 model files
@@ -121,6 +131,13 @@ class View(Observer, tk.Tk):
         btn_selectOutputFolder = ttk.Button(self.frm_step3, text='Browse...', command=self._selectOutputFolder)
         btn_selectOutputFolder.grid(row=2, column=2, padx=self.PAD_WIDGET, pady=self.PAD_WIDGET)
 
+    def _createPredictionProgressWidgets(self):
+        # widgets for prediction progress
+        lbl_predictionProgress = ttk.Label(self.frm_progress, text='Prediction progress:')
+        lbl_predictionProgress.pack(fill="both", expand=1)
+        self.bar_predictionProgress = ttk.Progressbar(self.frm_progress, variable = self.progress)
+        self.bar_predictionProgress.pack(fill="both", expand=1, pady=self.PAD_FRAME)
+
     def _selectModelFile(self, entry):
         selectedModelPath = filedialog.askopenfilename(filetypes=[('YOLOv8 model', '*.pt')], title='Select your YOLOv8 model')
         if selectedModelPath: # Only update entry when a file is chosen, do nothing when cancelled
@@ -147,6 +164,8 @@ class View(Observer, tk.Tk):
         if isinstance(observable, Model):
             progress_count = observable.progressCount
             print(progress_count)
+            self.progress.set(progress_count)
+            self.bar_predictionProgress.update()
 
     def _executePrediction(self):
         modelPathsList = []
@@ -158,6 +177,9 @@ class View(Observer, tk.Tk):
         outputPath = self.outputFolderPath.get()
         
         self.controller.executePrediction(modelPathsList, imagesPath, outputPath)
+
+    def setPredictionProgressBarMaximum(self, maximumProgress):
+        self.bar_predictionProgress['maximum'] = maximumProgress
 
     def showErrorMessageBox(self, message):
         messagebox.showerror("Error", message)
