@@ -40,8 +40,7 @@ class View(Observer, tk.Tk):
         self.modelFilePath4 = tk.StringVar()
         self.modelFilePath5 = tk.StringVar()
         self.stringVars = [self.modelFilePath1, self.modelFilePath2, self.modelFilePath3, self.modelFilePath4, self.modelFilePath5]
-        self.progress = tk.IntVar()
-        
+                
         # Step 1: Select one or more model files
         self._createSelectModelFilesLabelFrame()
         self._createSelectModelFilesWidgets()
@@ -131,12 +130,19 @@ class View(Observer, tk.Tk):
         btn_selectOutputFolder = ttk.Button(self.frm_step3, text='Browse...', command=self._selectOutputFolder)
         btn_selectOutputFolder.grid(row=2, column=2, padx=self.PAD_WIDGET, pady=self.PAD_WIDGET)
 
+    def _createPredictButton(self):
+        self.btn_predict = ttk.Button(self.frm_main, text='Predict!', command = self._executePrediction)
+        self.btn_predict.pack(fill="both", expand=1, pady=self.PAD_FRAME)
+
     def _createPredictionProgressWidgets(self):
         # widgets for prediction progress
-        lbl_predictionProgress = ttk.Label(self.frm_progress, text='Prediction progress:')
-        lbl_predictionProgress.pack(fill="both", expand=1)
+        self.currentModel = tk.StringVar()
+        lbl_currentModel = ttk.Label(self.frm_progress, textvariable=self.currentModel)
+        lbl_currentModel.bind('<Configure>', lambda e: lbl_currentModel.config(wraplength=lbl_currentModel.winfo_width()))
+        lbl_currentModel.pack(fill="both", expand=1, padx=self.PAD_WIDGET, pady=self.PAD_WIDGET)
+        self.progress = tk.IntVar()
         self.bar_predictionProgress = ttk.Progressbar(self.frm_progress, variable = self.progress)
-        self.bar_predictionProgress.pack(fill="both", expand=1, pady=self.PAD_FRAME)
+        self.bar_predictionProgress.pack(fill="both", expand=1, padx=self.PAD_WIDGET, pady=self.PAD_WIDGET)
 
     def _selectModelFile(self, entry):
         selectedModelPath = filedialog.askopenfilename(filetypes=[('YOLOv8 model', '*.pt')], title='Select your YOLOv8 model')
@@ -153,9 +159,7 @@ class View(Observer, tk.Tk):
         if selectedOutputFolderPath: # Only update entry when a folder is chosen, do nothing when cancelled
             self.outputFolderPath.set(selectedOutputFolderPath)
 
-    def _createPredictButton(self):
-        self.btn_predict = ttk.Button(self.frm_main, text='Predict!', command = self._executePrediction)
-        self.btn_predict.pack(fill="both", expand=1, pady=self.PAD_FRAME)
+
 
     #---------------------------
     # Other methods
@@ -163,7 +167,6 @@ class View(Observer, tk.Tk):
     def update(self, observable):
         if isinstance(observable, Model):
             progress_count = observable.progressCount
-            print(progress_count)
             self.progress.set(progress_count)
             self.bar_predictionProgress.update()
 

@@ -23,6 +23,12 @@ class Controller():
         if not self.model.checkFolderExists(outputPath):
              errormessage = errormessage + "Output folder not found:\n" + outputPath + "\n\n"
         return errormessage
+    
+    def _preparePredictionProgress(self, YOLOv8ModelPath, imagesList):
+        self.view.currentModel.set("Current model: " + YOLOv8ModelPath)
+        self.view.progress.set(0) # Reset the ProgressBar to zero
+        maximumProgress = len(imagesList)
+        self.view.setPredictionProgressBarMaximum(maximumProgress) # Set the maximum of the ProgressBar to the amount of images for prediction
 
     def executePrediction(self, YOLOv8ModelPathsList, imagesPath, outputPath):
         if not YOLOv8ModelPathsList or not imagesPath or not outputPath: # If one or more fields are empty, show an error
@@ -44,7 +50,5 @@ class Controller():
                     self.view.showErrorMessageBox("The following YOLOv8 models are not valid YOLOv8 image classification or instance segmentation models: \n\n" + invalid_models_string)
                 else: # All models are valid, execute prediction
                     for YOLOv8ModelPath in YOLOv8ModelPathsList:
-                        self.view.progress.set(0)
-                        maximumProgress = len(imagesList)
-                        self.view.setPredictionProgressBarMaximum(maximumProgress)
+                        self._preparePredictionProgress(YOLOv8ModelPath, imagesList)
                         self.model.executePrediction(YOLOv8ModelPath, imagesPath, imagesList, outputPath)
