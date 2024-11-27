@@ -55,12 +55,12 @@ class Controller():
                     self.view.showErrorMessageBox("The chosen folder in Step 2 does not contain any images. Please choose a different folder with images.")
                 else: 
                     # The images folder contains images, check if all YOLOv8 models are valid.
-                    invalid_models = self.model.validateYOLOv8Models(YOLOv8ModelPathsList)
-                    if invalid_models: 
+                    invalidYOLOv8ModelsList = self.model.validateYOLOv8Models(YOLOv8ModelPathsList)
+                    if invalidYOLOv8ModelsList: 
                         # There are invalid YOLOv8 models, show an error to the user with the invalid models.
-                        delimiter_invalid_models = "\n"
-                        invalid_models_string = delimiter_invalid_models.join(invalid_models)
-                        self.view.showErrorMessageBox("The following YOLOv8 models are not valid YOLOv8 image classification or instance segmentation models: \n\n" + invalid_models_string)
+                        delimiter = "\n"
+                        invalidModelsString = delimiter.join(invalidYOLOv8ModelsList)
+                        self.view.showErrorMessageBox("The following YOLOv8 models are not valid YOLOv8 image classification or instance segmentation models: \n\n" + invalidModelsString)
                     else: 
                         # All models are valid, execute prediction with all selected models.
                         for YOLOv8ModelPath in YOLOv8ModelPathsList:
