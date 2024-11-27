@@ -8,32 +8,36 @@ class Observer:
         pass
 
 class View(Observer, tk.Tk):
-
+    """ Class for the GUI """
     PAD_WIDGET = 5
     PAD_FRAME = 20
     WIDTH_ENTRY = 40
 
     def __init__(self, controller):
+        """ Initializes the View object """
         super().__init__()
         
-        # set the controller for this view
+        # set the controller and title for this view
         self.controller = controller
-
-        # set the title and size of the window
-        self.title('YOLOv8 Model Application')
+        self.title('YOLOv8 Application')
 
         # create the main frame in the window
         self._createMainFrame()
         
     def main(self):
+        """ Starts the application """
         self.mainloop()
 
     def _createMainFrame(self):
+        """ Creates the main frame """
         self.frm_main = ttk.Frame(self, padding=self.PAD_FRAME)
         self.frm_main.pack(fill="both", padx=self.PAD_FRAME, pady=self.PAD_FRAME)
         self._createLabelFramesAndWidgets()
       
     def _createLabelFramesAndWidgets(self):
+        """ Creates the labelframes and widgets """
+
+        # StringVars for the YOLOv8 model paths
         self.modelFilePath1 = tk.StringVar()
         self.modelFilePath2 = tk.StringVar()
         self.modelFilePath3 = tk.StringVar()
@@ -65,21 +69,6 @@ class View(Observer, tk.Tk):
         self.frm_step1.pack(fill="both", expand=1, pady=self.PAD_FRAME)
         self.frm_step1.columnconfigure(1, weight=2)
 
-    def _createSelectImagesFolderLabelFrame(self):
-        self.frm_step2 = ttk.LabelFrame(self.frm_main, text='Step 2')
-        self.frm_step2.pack(fill="both", expand=1, pady=self.PAD_FRAME)
-        self.frm_step2.columnconfigure(1, weight=2)
-
-    def _createSelectOutputFolderLabelFrame(self):
-        self.frm_step3 = ttk.LabelFrame(self.frm_main, text='Step 3')
-        self.frm_step3.pack(fill="both", expand=1, pady=self.PAD_FRAME)
-        self.frm_step3.columnconfigure(1, weight=2)
-
-    def _createPredictionProgressLabelFrame(self):
-        self.frm_progress = ttk.LabelFrame(self.frm_main, text='Prediction Progress')
-        self.frm_progress.pack(fill="both", expand=1, pady=self.PAD_FRAME)
-        self.frm_progress.columnconfigure(1, weight=2)
-
     def _createSelectModelFilesWidgets(self):
         # widgets for selecting one or more YOLOv8 model files
         lbl_selectModelFiles = ttk.Label(self.frm_step1, text='Select your YOLOv8 model(s):')
@@ -110,6 +99,11 @@ class View(Observer, tk.Tk):
         btn_selectModelFile5 = ttk.Button(self.frm_step1, text='Browse...', command= lambda : self._selectModelFile(self.modelFilePath5))
         btn_selectModelFile5.grid(row=4, column=2, padx=self.PAD_WIDGET, pady=self.PAD_WIDGET)
 
+    def _createSelectImagesFolderLabelFrame(self):
+        self.frm_step2 = ttk.LabelFrame(self.frm_main, text='Step 2')
+        self.frm_step2.pack(fill="both", expand=1, pady=self.PAD_FRAME)
+        self.frm_step2.columnconfigure(1, weight=2)
+
     def _createSelectImagesFolderWidgets(self):
         # widgets for selecting a folder with images
         lbl_selectImagesFolder = ttk.Label(self.frm_step2, text='Select the folder with your images:')
@@ -119,6 +113,11 @@ class View(Observer, tk.Tk):
         ent_selectImagesFolder.grid(row=1, column=1, sticky='ew', padx=self.PAD_WIDGET, pady=self.PAD_WIDGET)
         btn_selectImagesFolder = ttk.Button(self.frm_step2, text='Browse...', command=self._selectImagesFolder)
         btn_selectImagesFolder.grid(row=1, column=2, padx=self.PAD_WIDGET, pady=self.PAD_WIDGET)
+
+    def _createSelectOutputFolderLabelFrame(self):
+        self.frm_step3 = ttk.LabelFrame(self.frm_main, text='Step 3')
+        self.frm_step3.pack(fill="both", expand=1, pady=self.PAD_FRAME)
+        self.frm_step3.columnconfigure(1, weight=2)
 
     def _createSelectOutputFolderWidgets(self):
         # widgets for selecting a folder for the output file
@@ -130,12 +129,12 @@ class View(Observer, tk.Tk):
         btn_selectOutputFolder = ttk.Button(self.frm_step3, text='Browse...', command=self._selectOutputFolder)
         btn_selectOutputFolder.grid(row=2, column=2, padx=self.PAD_WIDGET, pady=self.PAD_WIDGET)
 
-    def _createPredictButton(self):
-        self.btn_predict = ttk.Button(self.frm_main, text='Predict!', command = self._executePrediction)
-        self.btn_predict.pack(fill="both", expand=1, pady=self.PAD_FRAME)
+    def _createPredictionProgressLabelFrame(self):
+        self.frm_progress = ttk.LabelFrame(self.frm_main, text='Prediction Progress')
+        self.frm_progress.pack(fill="both", expand=1, pady=self.PAD_FRAME)
+        self.frm_progress.columnconfigure(1, weight=2)
 
     def _createPredictionProgressWidgets(self):
-        # widgets for prediction progress
         self.currentModel = tk.StringVar()
         lbl_currentModel = ttk.Label(self.frm_progress, textvariable=self.currentModel)
         lbl_currentModel.bind('<Configure>', lambda e: lbl_currentModel.config(wraplength=lbl_currentModel.winfo_width()))
@@ -143,6 +142,10 @@ class View(Observer, tk.Tk):
         self.progress = tk.IntVar()
         self.bar_predictionProgress = ttk.Progressbar(self.frm_progress, variable = self.progress)
         self.bar_predictionProgress.pack(fill="both", expand=1, padx=self.PAD_WIDGET, pady=self.PAD_WIDGET)
+
+    def _createPredictButton(self):
+        self.btn_predict = ttk.Button(self.frm_main, text='Predict!', command = self._executePrediction)
+        self.btn_predict.pack(fill="both", expand=1, pady=self.PAD_FRAME)
 
     def _selectModelFile(self, entry):
         selectedModelPath = filedialog.askopenfilename(filetypes=[('YOLOv8 model', '*.pt')], title='Select your YOLOv8 model')
@@ -159,17 +162,9 @@ class View(Observer, tk.Tk):
         if selectedOutputFolderPath: # Only update entry when a folder is chosen, do nothing when cancelled
             self.outputFolderPath.set(selectedOutputFolderPath)
 
-
-
     #---------------------------
     # Other methods
     #---------------------------
-    def update(self, observable):
-        if isinstance(observable, Model):
-            progress_count = observable.progressCount
-            self.progress.set(progress_count)
-            self.bar_predictionProgress.update()
-
     def _executePrediction(self):
         modelPathsList = []
         for stringVar in self.stringVars:
@@ -189,3 +184,9 @@ class View(Observer, tk.Tk):
 
     def showInfoMessageBox(self, message):
         messagebox.showinfo("Info", message)
+
+    def update(self, observable):
+        if isinstance(observable, Model):
+            progress_count = observable.progressCount
+            self.progress.set(progress_count)
+            self.bar_predictionProgress.update()
