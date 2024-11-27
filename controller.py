@@ -52,3 +52,4 @@ class Controller():
                     for YOLOv8ModelPath in YOLOv8ModelPathsList:
                         self._preparePredictionProgress(YOLOv8ModelPath, imagesList)
                         self.model.executePrediction(YOLOv8ModelPath, imagesPath, imagesList, outputPath)
+                    self.view.showInfoMessageBox("Prediction completed. The results can be found in the selected output folder: \n\n" + outputPath)

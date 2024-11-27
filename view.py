@@ -186,3 +186,6 @@ class View(Observer, tk.Tk):
 
     def showErrorMessageBox(self, message):
         messagebox.showerror("Error", message)
+
+    def showInfoMessageBox(self, message):
+        messagebox.showinfo("Info", message)
