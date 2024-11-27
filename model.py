@@ -27,44 +27,6 @@ class Model(Observable):
         super().__init__()
         self.progressCount = 0
 
-    def _getTaskOfYOLOv8Model(self, YOLOv8ModelToCheck):
-        """
-        Gets the task of a YOLOv8 Model.
-        
-        Parameters:
-            YOLOv8ModelToCheck (str): Path of the YOLOv8 Model.
-
-        Returns:
-            (str): string that contains the task of the YOLOv8 Model.
-        """
-        
-        model = YOLO(YOLOv8ModelToCheck)
-        return model.task
-    
-    def pathsExist(self, YOLOv8ModelPathsList, imagesPath, outputPath):
-        """ 
-        Checks if all paths in the arguments are existing paths.
-        
-        Parameters:
-            YOLOv8ModelPathsList (list[str]): List with the paths of the user's selected YOLOv8 Models. 
-            imagesPath (str): Path of the user's selected folder with images where prediction is going to be performed on. 
-            outputPath (str): Path of the user's selected folder where the output file(s) are being saved.
-
-        Returns: 
-            errormessage (str): The errormessage containing the paths of files and/or folders that don't exist.
-        """
-
-        errormessage = ""
-        # Check if all paths exist. When a file or folder does not exist, append the file or folder to the errormessage
-        for YOLOv8ModelPath in YOLOv8ModelPathsList:
-            if not self._checkFileExists(YOLOv8ModelPath):
-                errormessage = errormessage + "YOLOv8 Model File not found:\n"  + YOLOv8ModelPath + "\n\n" 
-        if not self._checkFolderExists(imagesPath):
-            errormessage = errormessage + "Images Folder not found:\n" + imagesPath + "\n\n"
-        if not self._checkFolderExists(outputPath):
-             errormessage = errormessage + "Output folder not found:\n" + outputPath + "\n\n"
-        return errormessage
-    
     def _checkFileExists(self, filePathToCheck):
         """
         Checks if the path is an existing file.
@@ -90,24 +52,6 @@ class Model(Observable):
         """
 
         return os.path.isdir(folderPathToCheck)
-    
-    def checkImagesFolder(self, imagesFolderPathToCheck):
-        """
-        Checks if the folder actually contains images (.png, .jpg, and .jpeg) and put the names of the images in a list.
-
-        Parameters:
-            imagesFolderPathToCheck (str): Path of the images folder.
-
-        Returns:
-            imagesList (list[str]): List that contains the names of all images in the images folder.
-        """
-
-        files = os.listdir(imagesFolderPathToCheck)
-        imagesList = []
-        for file in files:
-            if file.endswith((".png", ".jpg", ".jpeg")):
-                imagesList.append(file)
-        return imagesList
 
     def _determineOutputFileName(self, outputPath):
         """
@@ -128,24 +72,27 @@ class Model(Observable):
             counter += 1
         return outputFilePath
 
-    def validateYOLOv8Models(self, YOLOv8ModelPathsList):
+    def _getTaskOfYOLOv8Model(self, YOLOv8ModelToCheck):
         """
-        Checks if all models are valid YOLOv8 Models. Loops through YOLOv8ModelPathsList, if an UnpicklingError is catched, add the path to the invalidYOLOv8ModelsPathsList
-
+        Gets the task of a YOLOv8 Model.
+        
         Parameters:
-            YOLOv8ModelPathsList (list[str]): List with the paths of the user's selected YOLOv8 Models. 
+            YOLOv8ModelToCheck (str): Path of the YOLOv8 Model.
 
         Returns:
-            invalidYOLOv8ModelPathsList (list[str]): List with the paths of unvalid YOLOv8 Models.
+            (str): string that contains the task of the YOLOv8 Model.
+        """
+        
+        model = YOLO(YOLOv8ModelToCheck)
+        return model.task
+    
+    def _increaseProgressCount(self):
+        """
+        Increases the progressCount and notifies all observers
         """
 
-        invalidYOLOv8ModelPathsList = []
-        for YOLOv8ModelPath in YOLOv8ModelPathsList:
-            try:
-                self._getTaskOfYOLOv8Model(YOLOv8ModelPath)
-            except UnpicklingError:
-                invalidYOLOv8ModelPathsList.append(YOLOv8ModelPath)
-        return invalidYOLOv8ModelPathsList
+        self.progressCount += 1
+        self.notifyObservers()
 
     def _setProgressCount(self, progressCount):
         """
@@ -154,14 +101,24 @@ class Model(Observable):
 
         self.progressCount = progressCount
         self.notifyObservers()
-
-    def _increaseProgressCount(self):
+    
+    def checkImagesFolder(self, imagesFolderPathToCheck):
         """
-        Increases the progressCount and notifies all observers
+        Checks if the folder actually contains images (.png, .jpg, and .jpeg) and put the names of the images in a list.
+
+        Parameters:
+            imagesFolderPathToCheck (str): Path of the images folder.
+
+        Returns:
+            imagesList (list[str]): List that contains the names of all images in the images folder.
         """
 
-        self.progressCount += 1
-        self.notifyObservers()
+        files = os.listdir(imagesFolderPathToCheck)
+        imagesList = []
+        for file in files:
+            if file.endswith((".png", ".jpg", ".jpeg")):
+                imagesList.append(file)
+        return imagesList
 
     def executeYOLOv8ModelPrediction(self, YOLOv8ModelPath, imagesPath, imagesList, outputPath):
         """
@@ -212,3 +169,46 @@ class Model(Observable):
                     outputWriter.writerow([image, amountOfInstances]) # Write the prediction results
                     self._increaseProgressCount() # Prediction has been performed on this image, increase the progress count
             del YOLOv8Model
+
+    def pathsExist(self, YOLOv8ModelPathsList, imagesPath, outputPath):
+        """ 
+        Checks if all paths in the arguments are existing paths.
+        
+        Parameters:
+            YOLOv8ModelPathsList (list[str]): List with the paths of the user's selected YOLOv8 Models. 
+            imagesPath (str): Path of the user's selected folder with images where prediction is going to be performed on. 
+            outputPath (str): Path of the user's selected folder where the output file(s) are being saved.
+
+        Returns: 
+            errormessage (str): The errormessage containing the paths of files and/or folders that don't exist.
+        """
+
+        errormessage = ""
+        # Check if all paths exist. When a file or folder does not exist, append the file or folder to the errormessage
+        for YOLOv8ModelPath in YOLOv8ModelPathsList:
+            if not self._checkFileExists(YOLOv8ModelPath):
+                errormessage = errormessage + "YOLOv8 Model File not found:\n"  + YOLOv8ModelPath + "\n\n" 
+        if not self._checkFolderExists(imagesPath):
+            errormessage = errormessage + "Images Folder not found:\n" + imagesPath + "\n\n"
+        if not self._checkFolderExists(outputPath):
+             errormessage = errormessage + "Output folder not found:\n" + outputPath + "\n\n"
+        return errormessage
+
+    def validateYOLOv8Models(self, YOLOv8ModelPathsList):
+        """
+        Checks if all models are valid YOLOv8 Models. Loops through YOLOv8ModelPathsList, if an UnpicklingError is catched, add the path to the invalidYOLOv8ModelsPathsList
+
+        Parameters:
+            YOLOv8ModelPathsList (list[str]): List with the paths of the user's selected YOLOv8 Models. 
+
+        Returns:
+            invalidYOLOv8ModelPathsList (list[str]): List with the paths of unvalid YOLOv8 Models.
+        """
+
+        invalidYOLOv8ModelPathsList = []
+        for YOLOv8ModelPath in YOLOv8ModelPathsList:
+            try:
+                self._getTaskOfYOLOv8Model(YOLOv8ModelPath)
+            except UnpicklingError:
+                invalidYOLOv8ModelPathsList.append(YOLOv8ModelPath)
+        return invalidYOLOv8ModelPathsList
