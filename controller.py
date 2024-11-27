@@ -15,6 +15,29 @@ class Controller():
         self.model.addObserver(self.view)
         self.view.main()
     
+    def _checkEmptyFields(self, YOLOv8ModelPathsList, imagesPath, outputPath):
+        """
+        Checks for empty fields. If an empty field is found, append to the errorMessage.
+
+        Parameters:
+            YOLOv8ModelPathsList (list[str]): List with the paths of the user's selected YOLOv8 Models. 
+            imagesPath (str): Path of the user's selected folder with images where prediction is going to be performed on. 
+            outputPath (str): Path of the user's selected folder where the output file(s) are being saved.
+
+        Returns:
+            errorMessage (str): The error message containing the empty fields.
+        """
+
+        errorMessage = ""
+        # Check if all paths exist. When a file or folder does not exist, append the file or folder to the errormessage
+        if not YOLOv8ModelPathsList:
+            errorMessage = errorMessage + "Step 1: Please select at least one YOLOv8 model file.\n\n" 
+        if not imagesPath:
+            errorMessage = errorMessage + "Step 2: Please select an images folder.\n\n"
+        if not outputPath:
+            errorMessage = errorMessage + "Step 3: Please select an output folder."
+        return errorMessage
+
     def _preparePredictionProgress(self, YOLOv8ModelPath, amountOfImages):
         """
         Prepares a part of the view to show the prediction progress for each model that is used in the prediction.
@@ -38,20 +61,22 @@ class Controller():
         """
 
         # Check if there are one or more empty fields that cannot be empty
-        if not YOLOv8ModelPathsList or not imagesPath or not outputPath: # If one or more fields are empty, show an error
-            self.view.showErrorMessageBox("Some fields appear to be empty. Please choose at least one model in Step 1, the images folder in Step 2, and the output folder in Step 3 to predict.")
+        emptyFieldsErrorMessage = self._checkEmptyFields(YOLOv8ModelPathsList, imagesPath, outputPath)
+        if emptyFieldsErrorMessage: 
+            # One or more fields are empty, show an error indicating the empty fields
+            self.view.showErrorMessageBox(emptyFieldsErrorMessage)
         else: 
             # All required fields are filled in, check if all paths exist
-            errormessage = self.model.pathsExist(YOLOv8ModelPathsList, imagesPath, outputPath)
-            if errormessage: 
+            notExistErrorMessage = self.model.pathsExist(YOLOv8ModelPathsList, imagesPath, outputPath)
+            if notExistErrorMessage: 
                 # One or more paths do not exist, show an error to the user containing the paths that don't exist
-                self.view.showErrorMessageBox(errormessage)
+                self.view.showErrorMessageBox(notExistErrorMessage)
             else:
                 # All paths exist, check if the images folder (imagesPath) actually contain any images and put the names of all images in a a list.
                 imagesList = self.model.checkImagesFolder(imagesPath)
                 if not imagesList: 
                     # If the images folder contains no images, show an error to the user.
-                    self.view.showErrorMessageBox("The chosen folder in Step 2 does not contain any images. Please choose a different folder with images.")
+                    self.view.showErrorMessageBox("Step 2: The chosen folder does not contain any images. Please choose a different folder with images.")
                 else: 
                     # The images folder contains images, check if all YOLOv8 models are valid.
                     invalidYOLOv8ModelsList = self.model.validateYOLOv8Models(YOLOv8ModelPathsList)

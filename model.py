@@ -180,19 +180,19 @@ class Model(Observable):
             outputPath (str): Path of the user's selected folder where the output file(s) are being saved.
 
         Returns: 
-            errormessage (str): The errormessage containing the paths of files and/or folders that don't exist.
+            errormessage (str): The error message containing the paths of files and/or folders that don't exist.
         """
 
-        errormessage = ""
+        errorMessage = ""
         # Check if all paths exist. When a file or folder does not exist, append the file or folder to the errormessage
         for YOLOv8ModelPath in YOLOv8ModelPathsList:
             if not self._checkFileExists(YOLOv8ModelPath):
-                errormessage = errormessage + "YOLOv8 Model File not found:\n"  + YOLOv8ModelPath + "\n\n" 
+                errorMessage = errorMessage + "Step 1: YOLOv8 model file not found:\n"  + YOLOv8ModelPath + "\n\n" 
         if not self._checkFolderExists(imagesPath):
-            errormessage = errormessage + "Images Folder not found:\n" + imagesPath + "\n\n"
+            errorMessage = errorMessage + "Step 2: Images folder not found:\n" + imagesPath + "\n\n"
         if not self._checkFolderExists(outputPath):
-             errormessage = errormessage + "Output folder not found:\n" + outputPath + "\n\n"
-        return errormessage
+             errorMessage = errorMessage + "Step 3: Output folder not found:\n" + outputPath + "\n\n"
+        return errorMessage
 
     def validateYOLOv8Models(self, YOLOv8ModelPathsList):
         """
