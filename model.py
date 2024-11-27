@@ -28,9 +28,33 @@ class Model(Observable):
         model = YOLO(YOLOv8modelToCheck)
         return model.task
     
+    def pathsExist(self, YOLOv8ModelPathsList, imagesPath, outputPath):
+        """ 
+        Checks if all paths in the arguments are existing paths 
+        
+        Args:
+            YOLOv8ModelPathsList (list[str]): List with the paths of the user's selected YOLOv8 Models. 
+            imagesPath (str): Path of the user's selected folder with images where prediction is going to be performed on. 
+            outputPath (str): Path of the user's selected folder where the output file(s) are being saved.
+
+        Returns: 
+            errormessage (str): The errormessage containing the paths of files and/or folders that don't exist.
+        """
+
+        errormessage = ""
+        # Check if all paths exist, if a file or folder does not exis, append the error to the errormessage
+        for YOLOv8ModelPath in YOLOv8ModelPathsList:
+            if not self.checkFileExists(YOLOv8ModelPath):
+                errormessage = errormessage + "YOLOv8 Model File not found:\n"  + YOLOv8ModelPath + "\n\n" 
+        if not self.checkFolderExists(imagesPath):
+            errormessage = errormessage + "Images Folder not found:\n" + imagesPath + "\n\n"
+        if not self.checkFolderExists(outputPath):
+             errormessage = errormessage + "Output folder not found:\n" + outputPath + "\n\n"
+        return errormessage
+    
     def checkFileExists(self, fileToCheck):
         return os.path.isfile(fileToCheck)
-    
+
     def checkFolderExists(self, folderPathToCheck):
         return os.path.isdir(folderPathToCheck)
     

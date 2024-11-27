@@ -14,30 +14,6 @@ class Controller():
         self.view = View(self)
         self.model.add_observer(self.view)
         self.view.main()
-
-    def _pathsExist(self, YOLOv8ModelPathsList, imagesPath, outputPath):
-        """ 
-        Checks if all paths in the arguments are existing paths 
-        
-        Args:
-            YOLOv8ModelPathsList (list[str]): List with the paths of the user's selected YOLOv8 Models. 
-            imagesPath (str): Path of the user's selected folder with images where prediction is going to be performed on. 
-            outputPath (str): Path of the user's selected folder where the output file(s) are being saved.
-
-        Returns: 
-            errormessage (str): The errormessage containing the paths of files and/or folders that don't exist.
-        """
-
-        errormessage = ""
-        # Check if all paths exist, if a file or folder does not exis, append the error to the errormessage
-        for YOLOv8ModelPath in YOLOv8ModelPathsList:
-            if not self.model.checkFileExists(YOLOv8ModelPath):
-                errormessage = errormessage + "YOLOv8 Model File not found:\n"  + YOLOv8ModelPath + "\n\n" 
-        if not self.model.checkFolderExists(imagesPath):
-            errormessage = errormessage + "Images Folder not found:\n" + imagesPath + "\n\n"
-        if not self.model.checkFolderExists(outputPath):
-             errormessage = errormessage + "Output folder not found:\n" + outputPath + "\n\n"
-        return errormessage
     
     def _preparePredictionProgress(self, YOLOv8ModelPath, amountOfImages):
         """
@@ -67,7 +43,7 @@ class Controller():
             self.view.showErrorMessageBox("Some fields appear to be empty. Please choose at least one model in Step 1, the images folder in Step 2, and the output folder in Step 3 to predict.")
         else: 
             # All required fields are filled in, check if all paths exist
-            errormessage = self._pathsExist(YOLOv8ModelPathsList, imagesPath, outputPath)
+            errormessage = self.model.pathsExist(YOLOv8ModelPathsList, imagesPath, outputPath)
             if errormessage: 
                 # One or more paths do not exist, show an error to the user containing the paths that don't exist
                 self.view.showErrorMessageBox(errormessage)
