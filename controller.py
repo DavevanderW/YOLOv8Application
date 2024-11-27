@@ -12,27 +12,26 @@ class Controller():
 
         # Create a view, set the view as an observer for the model, and start the view
         self.view = View(self)
-        self.model.add_observer(self.view)
+        self.model.addObserver(self.view)
         self.view.main()
     
     def _preparePredictionProgress(self, YOLOv8ModelPath, amountOfImages):
         """
         Prepares a part of the view to show the prediction progress for each model that is used in the prediction.
 
-        Args:
+        Parameters:
             YOLOv8ModelPath (str): The path of the user's selected YOLOv8 Model that is currently used to perform prediction. 
             amountOfImages (int): The amount of images where prediction is going to be performed on. 
         """
 
         self.view.currentModel.set("Current model: " + YOLOv8ModelPath) # Set the name of the current model
-        self.view.progress.set(0) # Reset the ProgressBar to zero
         self.view.setPredictionProgressBarMaximum(amountOfImages) # Set the maximum of the ProgressBar to the amount of images for prediction
 
     def executePrediction(self, YOLOv8ModelPathsList, imagesPath, outputPath):
         """
         Checks all user's input and shows error if necessary. If all evrything is fine, prediction is executed for all selected models.
 
-        Args:
+        Parameters:
             YOLOv8ModelPathsList (list[str]): List with the paths of the user's selected YOLOv8 Models. 
             imagesPath (str): Path of the user's selected folder with images where prediction is going to be performed on. 
             outputPath (str): Path of the user's selected folder where the output file(s) are being saved.
@@ -65,5 +64,5 @@ class Controller():
                         # All models are valid, execute prediction with all selected models.
                         for YOLOv8ModelPath in YOLOv8ModelPathsList:
                             self._preparePredictionProgress(YOLOv8ModelPath, len(imagesList))
-                            self.model.executePrediction(YOLOv8ModelPath, imagesPath, imagesList, outputPath)
+                            self.model.executeYOLOv8ModelPrediction(YOLOv8ModelPath, imagesPath, imagesList, outputPath)
                         self.view.showInfoMessageBox("Prediction completed. The results can be found in the selected output folder: \n\n" + outputPath)
