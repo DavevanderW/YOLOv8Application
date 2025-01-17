@@ -1,4 +1,4 @@
-from model import Model
+from model import Model, supportedYOLOv8ModelTasks
 from view import View
 
 class Controller():
@@ -78,13 +78,14 @@ class Controller():
                     # If the images folder contains no images, show an error to the user.
                     self.view.showErrorMessageBox("Step 2: The chosen folder does not contain any images. Please choose a different folder with images.")
                 else: 
-                    # The images folder contains images, check if all YOLOv8 models are valid.
+                    # The images folder contains images, check if all YOLOv8 models are valid and supported.
                     invalidYOLOv8ModelsList = self.model.validateYOLOv8Models(YOLOv8ModelPathsList)
                     if invalidYOLOv8ModelsList: 
                         # There are invalid YOLOv8 models, show an error to the user with the invalid models.
                         delimiter = "\n"
+                        supportedYOLOv8ModelTasksString = delimiter.join(supportedYOLOv8ModelTasks.values())
                         invalidModelsString = delimiter.join(invalidYOLOv8ModelsList)
-                        self.view.showErrorMessageBox("The following YOLOv8 models are not valid YOLOv8 image classification or instance segmentation models: \n\n" + invalidModelsString)
+                        self.view.showErrorMessageBox("The following files are not supported YOLOv8 models: \n\n" + invalidModelsString + "\n\nThis application only supports YOLOv8 models with the following tasks:\n" + supportedYOLOv8ModelTasksString)
                     else: 
                         # All models are valid, execute prediction with all selected models.
                         for YOLOv8ModelPath in YOLOv8ModelPathsList:

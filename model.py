@@ -3,6 +3,11 @@ from ultralytics import YOLO
 import os
 import csv
 
+supportedYOLOv8ModelTasks = {
+        "classify": "Image classification",
+        "segment": "Instance segmentation"    
+}    
+
 class Observable:
     def __init__(self):
         self.observers = []
@@ -196,19 +201,21 @@ class Model(Observable):
 
     def validateYOLOv8Models(self, YOLOv8ModelPathsList):
         """
-        Checks if all models are valid YOLOv8 Models. Loops through YOLOv8ModelPathsList, if an UnpicklingError is catched, add the path to the invalidYOLOv8ModelsPathsList
+        Checks if all models are valid and supported YOLOv8 Models. Loops through YOLOv8ModelPathsList. If an UnpicklingError is catched or the YOLOv8 model's task is not supported, add the path to the invalidYOLOv8ModelsPathsList. 
 
         Parameters:
             YOLOv8ModelPathsList (list[str]): List with the paths of the user's selected YOLOv8 Models. 
 
         Returns:
-            invalidYOLOv8ModelPathsList (list[str]): List with the paths of unvalid YOLOv8 Models.
+            invalidYOLOv8ModelPathsList (list[str]): List with the paths of unvalid or unsupported YOLOv8 Models.
         """
 
         invalidYOLOv8ModelPathsList = []
         for YOLOv8ModelPath in YOLOv8ModelPathsList:
             try:
-                self._getTaskOfYOLOv8Model(YOLOv8ModelPath)
+                task = self._getTaskOfYOLOv8Model(YOLOv8ModelPath)
+                if task not in supportedYOLOv8ModelTasks:
+                    invalidYOLOv8ModelPathsList.append(YOLOv8ModelPath)
             except UnpicklingError:
                 invalidYOLOv8ModelPathsList.append(YOLOv8ModelPath)
         return invalidYOLOv8ModelPathsList
