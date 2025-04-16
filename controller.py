@@ -85,7 +85,7 @@ class Controller():
                         delimiter = "\n"
                         supportedYOLOv8ModelTasksString = delimiter.join(supportedYOLOv8ModelTasks.values())
                         invalidModelsString = delimiter.join(invalidYOLOv8ModelsList)
-                        self.view.showErrorMessageBox("The following files are not supported YOLOv8 models: \n\n" + invalidModelsString + "\n\nThis application only supports YOLOv8 models with the following tasks:\n" + supportedYOLOv8ModelTasksString)
+                        self.view.showErrorMessageBox("Step 1: The following files are not supported YOLOv8 models: \n\n" + invalidModelsString + "\n\nThis application only supports YOLOv8 models with the following tasks:\n" + supportedYOLOv8ModelTasksString)
                     else: 
                         # All models are valid, execute prediction with all selected models.
                         for YOLOv8ModelPath in YOLOv8ModelPathsList:
